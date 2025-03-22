@@ -1,0 +1,46 @@
+# Dependencies
+node_modules/
+npm-debug.log
+yarn-debug.log
+yarn-error.log
+.pnpm-debug.log
+
+# Build output
+dist/
+build/
+out/
+lib/
+*.tsbuildinfo
+
+# Environment variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Logs
+logs/
+*.log
+
+# Coverage directory
+coverage/
+
+# IDE/Editor folders
+.idea/
+.vscode/*
+!.vscode/extensions.json
+!.vscode/launch.json
+!.vscode/settings.json
+.DS_Store
+
+# Temporary files
+*.swp
+*.swo
+.tmp/
+tmp/
+
+# Cache
+.eslintcache
+.npm
+.cache
