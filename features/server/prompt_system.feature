@@ -3,9 +3,12 @@ Feature: Prompt System
   I want to define and expose prompt templates
   So that LLMs can use standardized interaction patterns
 
+  @uses_path_handling
+
   Background:
     Given the MCP server is initialized
     And prompt capability is enabled
+    And standardized path handling for prompt parameters
 
   Scenario: Register feature prompt template
     When I register a prompt with:
@@ -42,3 +45,16 @@ Feature: Prompt System
     Then the server should validate the parameters
     And return the formatted prompt template
     And include message structure as defined
+
+  @path_handling
+  Scenario Outline: Prompt path parameter handling
+    Given a registered prompt with path parameters
+    When provided with path parameter "<input_path>"
+    Then the path should be normalized to "<normalized_path>"
+    Before substituting into the prompt template
+    
+    Examples:
+      | input_path                     | normalized_path                  |
+      | ./src                          | {project_root}/src               |
+      | ../outside                     | {project_root}                   |
+      | /project/code/                 | /project/code                    |

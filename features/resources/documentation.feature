@@ -3,9 +3,12 @@ Feature: Documentation Analysis Resource
   I want to access documentation resources from JavaScript/TypeScript projects via MCP
   So that I can understand available project documentation and code comment quality
 
+  @uses_path_handling
+
   Background:
     Given an MCP server with Documentation resource capability
     And access to JavaScript/TypeScript project documentation at configured paths
+    And standardized path normalization is enabled
 
   Scenario Outline: Retrieve documentation metadata via MCP
     Given a <project_type> codebase with documentation at <path>
@@ -43,3 +46,16 @@ Feature: Documentation Analysis Resource
       | coverage_level | path          | file_coverage | comment_ratio | quality_score | improvement_areas                                  |
       | "High"         | "well-doc/src"| 95.2          | 0.32          | "excellent"   | []                                                |
       | "Low"          | "poor-doc/src"| 23.7          | 0.05          | "poor"        | ["add_class_comments","document_parameters"]      |
+      
+  @path_handling
+  Scenario Outline: Documentation resource with special directories
+    Given a project with documentation at "~/Projects/mcp-project-typescript/docs"
+    When I request "documentation://<input_path>"
+    Then the path should be normalized to "<normalized_path>"
+    And the resource fetch should succeed
+    
+    Examples:
+      | input_path                           | normalized_path                           |
+      | ./docs/                              | ~/Projects/mcp-project-typescript/docs     |
+      | ../mcp-project-typescript/docs/api   | ~/Projects/mcp-project-typescript/docs/api |
+      | ~/Projects/mcp-project-typescript/.github/  | ~/Projects/mcp-project-typescript/.github |

@@ -3,9 +3,12 @@ Feature: Package.json Metadata Resource
   I want to access raw package.json metadata via MCP
   So that I can understand project dependencies and configuration directly
 
+  @uses_path_handling
+
   Background:
     Given an MCP server with Package resource capability
     And access to JavaScript/TypeScript package.json files at configured paths
+    And standardized path normalization is enabled
 
   Scenario Outline: Retrieve package.json metadata via MCP
     Given a package.json file exists at <path>
@@ -47,3 +50,16 @@ Feature: Package.json Metadata Resource
       | path                  | description                | author             | license  | private | workspaces    | peerDependencies                |
       | "project/package.json"| "MCP demo package"         | "MCP Team"         | "MIT"    | false   | null          | null                           |
       | "monorepo/package.json"| "MCP monorepo root"       | {"name":"MCP Team","email":"team@mcp.io"} | "MIT" | true | ["packages/*"] | [{"name":"react","version":"^18.0.0"}] |
+      
+  @path_handling
+  Scenario Outline: Package resource with various path formats
+    Given a package.json exists at "~/Projects/mcp-project-typescript/package.json"
+    When I request "package://<input_path>"
+    Then the path should be normalized to "<normalized_path>"
+    And the resource fetch should succeed
+    
+    Examples:
+      | input_path                         | normalized_path                                  |
+      | ./package.json                    | ~/Projects/mcp-project-typescript/package.json   |
+      | ../mcp-project-typescript/package.json     | ~/Projects/mcp-project-typescript/package.json   |
+      | ~/Projects/mcp-project-typescript/package.json/    | ~/Projects/mcp-project-typescript/package.json   |

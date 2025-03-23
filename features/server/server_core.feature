@@ -3,9 +3,12 @@ Feature: MCP Core Server
   I want to create an MCP server core
   So that I can expose JS/TS development tools to LLM applications
 
+  @uses_path_handling
+
   Background:
     Given the MCP TypeScript SDK is installed
     And the required server components are available
+    And standardized path handling is configured
 
   Scenario: Initialize server with JavaScript/TypeScript tools capability
     When I create a new McpServer instance
@@ -30,3 +33,13 @@ Feature: MCP Core Server
     When a client connects to the server
     Then the server should maintain the client session state
     And properly clean up resources when the session ends
+
+  @path_handling
+  Scenario: Server path handling configuration
+    When the server initializes
+    Then it should configure path handling with:
+      | setting                | value                          |
+      | project_root          | process.cwd()                  |
+      | path_normalization    | enabled                        |
+      | path_security         | enabled                        |
+    And register path utilities for use by resources and tools

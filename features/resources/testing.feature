@@ -3,9 +3,12 @@ Feature: Testing Infrastructure Analysis Resource
   I want to access testing infrastructure data from JavaScript/TypeScript projects via MCP
   So that I can understand test setup and coverage without manual inspection
 
+  @uses_path_handling
+
   Background:
     Given an MCP server with Testing resource capability
     And access to JavaScript/TypeScript project test configurations at configured paths
+    And standardized path normalization is enabled
 
   Scenario Outline: Retrieve testing framework metadata via MCP
     Given a <framework_name> test setup at <path>
@@ -41,3 +44,16 @@ Feature: Testing Infrastructure Analysis Resource
       | framework_name | path           | overall | per_file                                  | uncovered_lines                     |
       | "Jest"         | "app/coverage" | 87.5    | {"src/index.ts":95.0,"src/utils.ts":80.2} | {"src/utils.ts":[45,67,89]}         |
       | "Vitest"       | "lib/reports"  | 92.3    | {"lib/core.ts":98.1,"lib/helpers.ts":86.5}| {"lib/helpers.ts":[12,13,14,15]}    |
+
+  @path_handling
+  Scenario Outline: Testing resource with various path formats
+    Given a Jest test setup at "~/Projects/mcp-project-typescript/tests"
+    When I request "testing://<input_path>"
+    Then the path should be normalized to "<normalized_path>"
+    And the resource fetch should succeed
+    
+    Examples:
+      | input_path                      | normalized_path                           |
+      | ./tests                        | ~/Projects/mcp-project-typescript/tests   |
+      | ../mcp-project-typescript/tests| ~/Projects/mcp-project-typescript/tests   |
+      | ~/Projects/mcp-project-typescript/tests/../tests | ~/Projects/mcp-project-typescript/tests |

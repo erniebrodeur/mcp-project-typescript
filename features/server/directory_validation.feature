@@ -3,9 +3,12 @@ Feature: Directory Validation
   I want to validate directory access
   So that operations only occur in approved paths
 
+  @uses_path_handling
+
   Background:
     Given the MCP server is initialized
     And directory validation is configured
+    And standardized path normalization is enabled
 
   Scenario: Validate approved directory operations
     When a tool attempts to operate in an approved directory
@@ -37,3 +40,21 @@ Feature: Directory Validation
       | /project/test          |
     Then operations within these directories should be permitted
     And operations outside these directories should be blocked
+
+  @path_handling
+  Scenario: Resource path normalization
+    When a resource URI template is defined as "resource://{path}"
+    Then the path parameter should be normalized before validation
+    And validated against approved directories
+
+  Scenario Outline: Resource parameter validation
+    When a URI "<uri>" is processed
+    Then path parameter extraction should handle:
+      | parameter | value           | validation_result |
+      | path      | <extracted>     | <valid>           |
+    
+    Examples:
+      | uri                                   | extracted                         | valid  |
+      | project://./relative                  | {project_root}/relative           | true   |
+      | package://../dangerous                | {project_root}                    | true   |
+      | testing://unapproved/path             | unapproved/path                   | false  |

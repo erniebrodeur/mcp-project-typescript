@@ -3,9 +3,12 @@ Feature: Tool System
   I want to define and expose tools
   So that LLMs can execute development operations
 
+  @uses_path_handling
+
   Background:
     Given the MCP server is initialized
     And tool capability is enabled
+    And standardized path handling for tool parameters
 
   Scenario: Register npm install tool
     When I register a tool with:
@@ -47,3 +50,16 @@ Feature: Tool System
     When a client calls a tool with valid parameters
     Then the server should execute the command
     And return the result in the prescribed format
+
+  @path_handling
+  Scenario Outline: Tool directory parameter normalization
+    Given a registered tool "npm_install"
+    When executed with directory parameter "<input_dir>"
+    Then the path should be normalized to "<normalized_dir>"
+    And validated before command execution
+    
+    Examples:
+      | input_dir                     | normalized_dir                  |
+      | ./project                     | {project_root}/project          |
+      | ../outside                    | {project_root}                  |
+      | /approved/project/            | /approved/project               |

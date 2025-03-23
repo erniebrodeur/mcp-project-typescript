@@ -3,9 +3,12 @@ Feature: Command Execution
   I want to safely execute shell commands
   So that LLMs can interact with development tools
 
+  @uses_path_handling
+
   Background:
     Given the MCP server is initialized
     And command execution is configured
+    And standardized path handling for working directories
 
   Scenario: Execute npm command in approved directory
     When I execute command "npm install" in an approved directory
@@ -38,3 +41,16 @@ Feature: Command Execution
     And a timeout of 30 seconds is specified
     Then the command should be terminated if it exceeds the timeout
     And an appropriate timeout error should be returned
+
+  @path_handling
+  Scenario Outline: Working directory path normalization
+    Given a command "npm run test" to be executed
+    When the command is executed with working directory "<input_dir>"
+    Then the path should be normalized to "<normalized_dir>"
+    And validated before execution
+    
+    Examples:
+      | input_dir                     | normalized_dir                  |
+      | ./test                        | {project_root}/test             |
+      | ../invalid                    | {project_root}                  |
+      | /approved/project/src/        | /approved/project/src           |
