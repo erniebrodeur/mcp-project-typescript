@@ -1,13 +1,25 @@
 import { setWorldConstructor, World, IWorldOptions } from '@cucumber/cucumber';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
+import { MockCommandExecutor } from '../../helpers/mock-command-executor';
+import { MockFileSystem } from '../../helpers/mock-filesystem';
 
 export class McpWorld extends World {
   server: McpServer;
-  mockExecutor: any;
-  mockFs: any;
+  mockExecutor: MockCommandExecutor;
+  mockFs: MockFileSystem;
   response: any = null;
   projectType: string = '';
   projectPath: string = '';
+  
+  // Server metadata
+  serverName: string = '';
+  serverVersion: string = '';
+  
+  // Directory validation properties
+  approvedDirectories: string[] = [];
+  currentPath: string = '';
+  validationResult: boolean = false;
+  symlinkTarget: string = '';
   
   constructor(options: IWorldOptions) {
     super(options);
@@ -15,9 +27,10 @@ export class McpWorld extends World {
       name: "TestServer",
       version: "1.0.0"
     });
-    // Mock implementations will be added when needed
-    this.mockExecutor = { execute: async () => ({}) };
-    this.mockFs = {};
+    
+    // Initialize mocks
+    this.mockExecutor = new MockCommandExecutor();
+    this.mockFs = new MockFileSystem();
   }
 
   loadFixture(category: string, type: string) {

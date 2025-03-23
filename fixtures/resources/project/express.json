@@ -1,0 +1,11 @@
+{
+  "project_type": "Express",
+  "entry_points": ["src/server.ts"],
+  "framework": {"express":"4.18"},
+  "test_framework": {"mocha":"10.2"},
+  "key_config_files": {"tsconfig.json":true},
+  "core_directories": {"src":true},
+  "node_version": "16.20.0",
+  "typescript": true,
+  "module_system": "CommonJS"
+}

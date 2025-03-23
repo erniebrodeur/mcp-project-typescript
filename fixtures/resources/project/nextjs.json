@@ -1,0 +1,11 @@
+{
+  "project_type": "Next.js",
+  "entry_points": ["pages/index.ts"],
+  "framework": {"next":"13.4"},
+  "test_framework": {"jest":"29.5"},
+  "key_config_files": {"tsconfig.json":true},
+  "core_directories": {"pages":true,"src":true},
+  "node_version": "18.16.0",
+  "typescript": true,
+  "module_system": "ESM"
+}
