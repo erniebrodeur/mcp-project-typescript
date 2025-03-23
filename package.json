@@ -9,6 +9,7 @@
   "scripts": {
     "test": "jest",
     "test:cucumber": "jest --testMatch='**/*.steps.ts'",
+    "test:bdd": "cucumber-js",
     "test:watch": "jest --watch",
     "build": "tsc",
     "start": "node dist/index.js",
