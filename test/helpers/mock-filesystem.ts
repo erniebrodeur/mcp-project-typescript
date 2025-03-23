@@ -6,7 +6,8 @@ export interface MockFileSystemOptions {
 }
 
 export class MockFileSystem {
-  private vol: Volume;
+  // Fix 1: Use ReturnType to properly type the volume instance
+  private vol: ReturnType<typeof Volume.fromJSON>;
   private fs: ReturnType<typeof createFsFromVolume>;
   
   constructor(options: MockFileSystemOptions = {}) {
@@ -14,11 +15,13 @@ export class MockFileSystem {
     this.fs = createFsFromVolume(this.vol);
   }
 
-  readFile(filepath: string, options?: { encoding?: string }): Promise<Buffer | string> {
+  readFile(filepath: string, options?: { encoding?: BufferEncoding }): Promise<Buffer | string> {
     return new Promise((resolve, reject) => {
-      this.fs.readFile(filepath, options || {}, (err, data) => {
+      // Fix 2: Use properly typed options for memfs
+      this.fs.readFile(filepath, options as any, (err, data) => {
         if (err) reject(err);
-        else resolve(data);
+        // Fix 3: Add null check for data
+        else resolve(data || Buffer.from([]));
       });
     });
   }
