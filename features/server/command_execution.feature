@@ -1,9 +1,8 @@
+@uses_path_handling
 Feature: Command Execution
   As a developer implementing JS/TS tools
   I want to safely execute shell commands
   So that LLMs can interact with development tools
-
-  @uses_path_handling
 
   Background:
     Given the MCP server is initialized

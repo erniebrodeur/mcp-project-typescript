@@ -1,9 +1,8 @@
+@uses_path_handling
 Feature: Package.json Metadata Resource
   As an AI assistant
   I want to access raw package.json metadata via MCP
   So that I can understand project dependencies and configuration directly
-
-  @uses_path_handling
 
   Background:
     Given an MCP server with Package resource capability

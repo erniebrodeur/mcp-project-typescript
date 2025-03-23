@@ -1,9 +1,8 @@
+@uses_path_handling
 Feature: File Organization Analysis Resource
   As an AI assistant
   I want to access project file organization patterns via MCP
   So that I can navigate and understand codebase structure efficiently
-
-  @uses_path_handling
 
   Background:
     Given an MCP server with Files resource capability

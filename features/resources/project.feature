@@ -1,9 +1,8 @@
+@uses_path_handling
 Feature: Project Structure Analysis Resource
   As an AI assistant
   I want to access TypeScript project semantic information via MCP
   So that I can understand projects without requiring manual description
-
-  @uses_path_handling
 
   Background:
     Given an MCP server with Project resource capability

@@ -1,9 +1,8 @@
+@uses_path_handling
 Feature: Directory Validation
   As a developer implementing secure JS/TS tools
   I want to validate directory access
   So that operations only occur in approved paths
-
-  @uses_path_handling
 
   Background:
     Given the MCP server is initialized

@@ -1,9 +1,8 @@
+@uses_path_handling
 Feature: MCP Core Server
   As a developer implementing JavaScript/TypeScript tools
   I want to create an MCP server core
   So that I can expose JS/TS development tools to LLM applications
-
-  @uses_path_handling
 
   Background:
     Given the MCP TypeScript SDK is installed

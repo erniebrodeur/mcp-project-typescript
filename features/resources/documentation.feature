@@ -1,9 +1,8 @@
+@uses_path_handling
 Feature: Documentation Analysis Resource
   As an AI assistant
   I want to access documentation resources from JavaScript/TypeScript projects via MCP
   So that I can understand available project documentation and code comment quality
-
-  @uses_path_handling
 
   Background:
     Given an MCP server with Documentation resource capability

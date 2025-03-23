@@ -1,9 +1,8 @@
+@uses_path_handling
 Feature: Testing Infrastructure Analysis Resource
   As an AI assistant
   I want to access testing infrastructure data from JavaScript/TypeScript projects via MCP
   So that I can understand test setup and coverage without manual inspection
-
-  @uses_path_handling
 
   Background:
     Given an MCP server with Testing resource capability

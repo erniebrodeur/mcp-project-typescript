@@ -1,9 +1,8 @@
+@uses_path_handling
 Feature: Resource System
   As a developer implementing JS/TS tools
   I want to define and expose resources
   So that LLMs can access project information
-
-  @uses_path_handling
 
   Background:
     Given the MCP server is initialized

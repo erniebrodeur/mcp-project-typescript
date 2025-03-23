@@ -1,9 +1,8 @@
+@uses_path_handling
 Feature: Tool System
   As a developer implementing JS/TS tools
   I want to define and expose tools
   So that LLMs can execute development operations
-
-  @uses_path_handling
 
   Background:
     Given the MCP server is initialized

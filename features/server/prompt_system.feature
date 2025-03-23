@@ -1,9 +1,8 @@
+@uses_path_handling
 Feature: Prompt System
   As a developer implementing JS/TS tools
   I want to define and expose prompt templates
   So that LLMs can use standardized interaction patterns
-
-  @uses_path_handling
 
   Background:
     Given the MCP server is initialized
@@ -51,7 +50,7 @@ Feature: Prompt System
     Given a registered prompt with path parameters
     When provided with path parameter "<input_path>"
     Then the path should be normalized to "<normalized_path>"
-    Before substituting into the prompt template
+    And be correctly formatted before substituting into the prompt template
     
     Examples:
       | input_path                     | normalized_path                  |

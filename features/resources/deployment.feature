@@ -1,9 +1,8 @@
+@uses_path_handling
 Feature: Deployment Configuration Analysis Resource
   As an AI assistant
   I want to access deployment configurations from JavaScript/TypeScript projects via MCP
   So that I can understand how projects are deployed and what CI/CD systems they use
-
-  @uses_path_handling
 
   Background:
     Given an MCP server with Deployment resource capability
