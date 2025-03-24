@@ -1,0 +1,24 @@
+{
+  "directories": {
+    "source": "src",
+    "test": "__tests__",
+    "build": "dist",
+    "static": ["public"]
+  },
+  "organization": {
+    "pattern": "feature-based",
+    "component_locations": ["src/components"],
+    "api_locations": ["src/api"]
+  },
+  "files": {
+    "typescript_present": true,
+    "jsx_present": true,
+    "test_pattern": "*.test.tsx",
+    "entry_points": ["src/index.tsx"]
+  },
+  "conventions": {
+    "naming_style": "PascalCase",
+    "file_extensions": [".tsx", ".ts", ".js", ".css"],
+    "index_files": true
+  }
+}

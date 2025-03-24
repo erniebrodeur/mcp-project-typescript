@@ -4,6 +4,22 @@ import { MockCommandExecutor } from '../../helpers/mock-command-executor';
 import { MockFileSystem } from '../../helpers/mock-filesystem';
 
 export class McpWorld extends World {
+  // Package resource properties
+  packagePath: string = '';
+  packageExists: boolean = true;
+  packageHasOptionalFields: boolean = false;
+  
+  // Transport properties
+  transportType: string = '';
+  transportInitialized: boolean = false;
+  transportConnected: boolean = false;
+  transportComponentsAvailable: boolean = false;
+  transportConfig: Record<string, string> = {};
+  sseEndpoint: string = '';
+  postEndpoint: string = '';
+  rawMessage: string = '';
+  concurrentClients: number = 0;
+  transportError: {type: string, message: string} | null = null;
   server: McpServer;
   mockExecutor: MockCommandExecutor;
   mockFs: MockFileSystem;
@@ -20,6 +36,27 @@ export class McpWorld extends World {
   currentPath: string = '';
   validationResult: boolean = false;
   symlinkTarget: string = '';
+  
+  // Resource registration tracking
+  registeredResources: string[] = [];
+  
+  // Path handling properties
+  pathNormalizationEnabled: boolean = false;
+  requestedUri: string = '';
+  
+  // URI template processing
+  uri: string = '';
+  uriTemplate: string = '';
+  extractedParam: string = '';
+  
+  // Path normalization
+  inputPath: string = '';
+  normalizedPath: string = '';
+  securityResult: string = '';
+  
+  // Project roots for path handling
+  projectRoots: string[] = [];
+  pathHandlingEnabled: boolean = false;
   
   constructor(options: IWorldOptions) {
     super(options);

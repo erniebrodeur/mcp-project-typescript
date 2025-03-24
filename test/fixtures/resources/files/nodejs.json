@@ -1,0 +1,24 @@
+{
+  "directories": {
+    "source": "src",
+    "test": "test",
+    "build": "dist",
+    "static": ["public"]
+  },
+  "organization": {
+    "pattern": "domain-driven",
+    "component_locations": [],
+    "api_locations": ["src/routes"]
+  },
+  "files": {
+    "typescript_present": true,
+    "jsx_present": false,
+    "test_pattern": "*.spec.ts",
+    "entry_points": ["src/server.ts"]
+  },
+  "conventions": {
+    "naming_style": "kebab-case",
+    "file_extensions": [".ts", ".js", ".json"],
+    "index_files": true
+  }
+}
