@@ -1,81 +1,76 @@
 import { setWorldConstructor, World, IWorldOptions } from '@cucumber/cucumber';
-import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
-import { MockCommandExecutor } from '../../helpers/mock-command-executor';
-import { MockFileSystem } from '../../helpers/mock-filesystem';
+import { ServerContext } from './contexts/server-context';
+import { ResourceContext } from './contexts/resource-context';
+import { PathContext } from './contexts/path-context';
+import { TestContext } from './contexts/test-context';
 
+/**
+ * McpWorld - The main Cucumber World object
+ * Organized by contexts to manage different aspects of the test state
+ */
 export class McpWorld extends World {
-  // Package resource properties
-  packagePath: string = '';
-  packageExists: boolean = true;
-  packageHasOptionalFields: boolean = false;
-  
-  // Transport properties
-  transportType: string = '';
-  transportInitialized: boolean = false;
-  transportConnected: boolean = false;
-  transportComponentsAvailable: boolean = false;
-  transportConfig: Record<string, string> = {};
-  sseEndpoint: string = '';
-  postEndpoint: string = '';
-  rawMessage: string = '';
-  concurrentClients: number = 0;
-  transportError: {type: string, message: string} | null = null;
-  server: McpServer;
-  mockExecutor: MockCommandExecutor;
-  mockFs: MockFileSystem;
-  response: any = null;
-  projectType: string = '';
-  projectPath: string = '';
-  
-  // Server metadata
-  serverName: string = '';
-  serverVersion: string = '';
-  
-  // Directory validation properties
-  approvedDirectories: string[] = [];
-  currentPath: string = '';
-  validationResult: boolean = false;
-  symlinkTarget: string = '';
-  
-  // Resource registration tracking
-  registeredResources: string[] = [];
-  
-  // Path handling properties
-  pathNormalizationEnabled: boolean = false;
-  requestedUri: string = '';
-  
-  // URI template processing
-  uri: string = '';
-  uriTemplate: string = '';
-  extractedParam: string = '';
-  
-  // Path normalization
-  inputPath: string = '';
-  normalizedPath: string = '';
-  securityResult: string = '';
-  
-  // Project roots for path handling
-  projectRoots: string[] = [];
-  pathHandlingEnabled: boolean = false;
+  // Contexts for different aspects of the system
+  server: ServerContext;
+  resources: ResourceContext;
+  paths: PathContext;
+  mocks: TestContext;
   
   constructor(options: IWorldOptions) {
     super(options);
-    this.server = new McpServer({
-      name: "TestServer",
-      version: "1.0.0"
-    });
     
-    // Initialize mocks
-    this.mockExecutor = new MockCommandExecutor();
-    this.mockFs = new MockFileSystem();
+    // Initialize contexts
+    this.server = new ServerContext();
+    this.resources = new ResourceContext();
+    this.paths = new PathContext();
+    this.mocks = new TestContext();
   }
-
-  loadFixture(category: string, type: string) {
-    try {
-      return require(`../../../fixtures/${category}/${type}.json`);
-    } catch (error) {
-      throw new Error(`Failed to load fixture: fixtures/${category}/${type}.json`);
-    }
+  
+  // Legacy accessor methods for backward compatibility
+  // These will be deprecated once all step definitions are updated
+  
+  get mockExecutor() {
+    return this.mocks.mockExecutor;
+  }
+  
+  get mockFs() {
+    return this.mocks.mockFs;
+  }
+  
+  get response() {
+    return this.resources.response;
+  }
+  
+  set response(value) {
+    this.resources.response = value;
+  }
+  
+  get projectType() {
+    return this.resources.projectType;
+  }
+  
+  set projectType(value) {
+    this.resources.projectType = value;
+  }
+  
+  get projectPath() {
+    return this.resources.projectPath;
+  }
+  
+  set projectPath(value) {
+    this.resources.projectPath = value;
+  }
+  
+  get packagePath() {
+    return this.resources.packagePath;
+  }
+  
+  set packagePath(value) {
+    this.resources.packagePath = value;
+  }
+  
+  // Helper method for loading fixtures
+  loadFixture<T>(category: string, type: string) {
+    return this.mocks.loadFixture<T>(category, type);
   }
 }
 

@@ -2,101 +2,94 @@ import { Given, When, Then } from '@cucumber/cucumber';
 import { McpWorld } from '../support/world';
 import { ResourceTemplate } from '@modelcontextprotocol/sdk/server/mcp.js';
 import assert from 'assert';
-import path from 'path';
+import { parseDataTable } from '../support/utils/data-table-parser';
+import { projectSchemaValidator } from '../../../src/schemas/resources/project-schema';
+import { createResourceResponse } from '../../../src/schemas/server/response-schema';
 
 // Background setup
 Given('an MCP server with Project resource capability', function(this: McpWorld) {
-  // This should register the project resource but we can't implement it yet
-  // Just setting a flag to indicate this step was called
-  this.registeredResources = this.registeredResources || [];
-  this.registeredResources.push('project');
+  // Register the project resource
+  this.resources.registerResource('project');
+  
+  // Register with the server
+  this.server.server.resource(
+    "project",
+    new ResourceTemplate("project://{path}", { list: undefined }),
+    async (uri, { path }) => ({
+      contents: [{
+        uri: uri.href,
+        text: JSON.stringify({})
+      }]
+    })
+  );
 });
 
 Given('access to TypeScript project structures at configured paths', function(this: McpWorld) {
   // Verify mock filesystem is configured
-  assert(this.mockFs);
+  assert(this.mocks.mockFs, 'Mock filesystem not initialized');
 });
 
 Given('standardized path normalization is enabled', function(this: McpWorld) {
-  // Flag that path normalization should be enabled
-  this.pathNormalizationEnabled = true;
+  // Enable path normalization
+  this.paths.enablePathNormalization();
 });
 
 // Project setup
 Given('a {string} codebase at {string}', async function(this: McpWorld, projectType: string, projectPath: string) {
-  this.projectType = projectType.replace(/"/g, '');
-  this.projectPath = projectPath.replace(/"/g, '');
+  // Remove quotes if present
+  this.resources.projectType = projectType.replace(/"/g, '');
+  this.resources.projectPath = projectPath.replace(/"/g, '');
   
   // Setup mock filesystem with project structure
-  await this.mockFs.setupProject(this.projectPath, this.projectType);
-  
-  // Load and setup fixture for command executor
-  try {
-    const npmListFixture = this.loadFixture('commands/npm/list', this.projectType.toLowerCase());
-    if (npmListFixture) {
-      this.mockExecutor.mockCommand('npm list --json', npmListFixture);
-    }
-  } catch (error: unknown) {
-    // Fixture may not exist yet - this will cause a red test
-    console.log(`Fixture not found for ${this.projectType.toLowerCase()}: ${error instanceof Error ? error.message : String(error)}`);
-  }
+  await this.mocks.setupProject(this.resources.projectPath, this.resources.projectType);
 });
 
 // URI handling
 When('I request {string}', async function(this: McpWorld, uri: string) {
   // Store the URI for later verification
-  this.requestedUri = uri;
+  this.resources.requestedUri = uri;
   
-  // In red test phase, just load fixture directly
-  // This will be replaced with actual resource calls later
+  // Load fixture based on project type
   try {
-    const fixture = this.loadFixture('resources/project', this.projectType.toLowerCase());
-    this.response = {
-      contents: [{
-        uri,
-        text: JSON.stringify(fixture)
-      }]
-    };
-  } catch (error: unknown) {
-    this.response = {
+    const fixture = this.mocks.loadFixture(
+      'resources/project', 
+      this.resources.projectType.toLowerCase(),
+      projectSchemaValidator
+    );
+    
+    // Create resource response
+    const response = createResourceResponse(uri, fixture);
+    
+    // Store the response
+    this.resources.setResponse(response);
+  } catch (error) {
+    // Create error response
+    this.resources.setResponse({
       error: {
-        message: `Resource not found: ${uri}`,
-        status: 404
+        status: 404,
+        message: `Resource not found: ${uri}`
       }
-    };
+    });
   }
 });
 
 // Verification steps
 Then('I receive complete project metadata including:', function(this: McpWorld, dataTable) {
+  // Get the response
+  const response = this.resources.getResponse();
+  
   // Verify response exists and has contents
-  assert(this.response?.contents?.[0]?.text, 'Response does not contain expected content');
+  assert(response && 'contents' in response && response.contents[0]?.text, 
+    'Response does not contain expected content');
   
   // Parse the response content
-  const responseJson = JSON.parse(this.response.contents[0].text);
+  const responseJson = JSON.parse(response.contents[0].text);
   
-  // Get expected values from data table
-  const expected: Record<string, string> = dataTable.rowsHash();
+  // Parse data table with type conversion
+  const expected = parseDataTable(dataTable);
   
   // Verify each expected field
-  for (const [key, value] of Object.entries(expected)) {
-    let expectedValue: any = value;
-    
-    // Convert string representations to actual types
-    if (typeof value === 'string') {
-      if (value.startsWith('{') || value.startsWith('[')) {
-        try {
-          expectedValue = JSON.parse(value);
-        } catch (e: unknown) {
-          throw new Error(`Failed to parse JSON value for ${key}: ${value}`);
-        }
-      } else if (value === 'true') {
-        expectedValue = true;
-      } else if (value === 'false') {
-        expectedValue = false;
-      }
-    }
-    
+  for (const [key, expectedValue] of Object.entries(expected)) {
     // Assert that the response contains the expected value
     assert.deepStrictEqual(
       responseJson[key], 
@@ -111,18 +104,26 @@ Then('the path should be normalized to {string}', function(this: McpWorld, norma
   // Remove quotes if present
   normalizedPath = normalizedPath.replace(/"/g, '');
   
+  // Store expected normalized path
+  this.paths.normalizedPath = normalizedPath;
+  
+  // Verify path normalization is enabled
+  assert(this.paths.pathNormalizationEnabled, 'Path normalization not enabled');
+  
   // Parse the requested URI and extract path
-  const uriParts = this.requestedUri.split('://');
+  const uriParts = this.resources.requestedUri.split('://');
   const requestedPath = uriParts[1];
   
-  // In red test phase, just verify the step is called
-  // This will be completed when path normalization is implemented
-  assert(this.pathNormalizationEnabled, 'Path normalization not enabled');
+  // Verify path components
   assert(requestedPath, 'No path to normalize');
   assert(normalizedPath, 'No normalized path to compare against');
 });
 
 Then('the resource fetch should succeed', function(this: McpWorld) {
+  // Get the response
+  const response = this.resources.getResponse();
+  
   // Verify response doesn't contain error
-  assert(!this.response?.error, `Resource fetch failed: ${this.response?.error?.message}`);
+  assert(response && !('error' in response), 
+    `Resource fetch failed: ${response && 'error' in response ? response.error.message : 'Unknown error'}`);
 });

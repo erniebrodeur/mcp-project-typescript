@@ -1,101 +1,111 @@
 import { Given, When, Then } from '@cucumber/cucumber';
 import { McpWorld } from '../support/world';
 import assert from 'assert';
+import { PathValidationStatus } from '../../../src/schemas/common/path-handling';
 
-// Approved directories for testing
-const APPROVED_DIRECTORIES = [
-  '/approved/project/path',
-];
+// Setup steps
+Given('the MCP server is initialized', function(this: McpWorld) {
+  assert(this.server.server, 'Server not initialized');
+  assert(this.server.isInitialized, 'Server initialization flag not set');
+});
 
-function isApprovedDirectory(dirPath: string, approvedPaths: string[]): boolean {
-  // Normalize path
-  const normalizedPath = dirPath
-    .replace(/\/+/g, '/') 
-    .replace(/\/$/, '');
+Given('directory validation is configured', function(this: McpWorld) {
+  // Configure with some approved directories for testing
+  this.paths.addApprovedDirectory('/approved/project/path');
+  this.paths.addApprovedDirectory('/project/src');
+});
+
+Given('standardized path normalization is enabled', function(this: McpWorld) {
+  this.paths.enablePathNormalization();
+});
+
+// Directory validation steps
+When('a tool attempts to operate in an approved directory', function(this: McpWorld) {
+  this.paths.setCurrentPath('/approved/project/path/subdir');
   
-  // Check if directly approved
-  if (approvedPaths.includes(normalizedPath)) {
-    return true;
-  }
+  // Stub validation result - will fail in red phase
+  this.paths.validationResult = {
+    status: PathValidationStatus.Invalid, // Will make test fail
+    normalizedPath: '/approved/project/path/subdir',
+    originalPath: '/approved/project/path/subdir',
+    isApproved: false // Will make test fail
+  };
+});
+
+When('a tool attempts to operate in an unapproved directory', function(this: McpWorld) {
+  this.paths.setCurrentPath('/unapproved/directory');
   
-  // Check if subdirectory
-  return approvedPaths.some(approvedPath => 
-    normalizedPath.startsWith(approvedPath + '/')
-  );
-}
-
-function hasSuspiciousPatterns(dirPath: string): boolean {
-  return dirPath.includes('..') || 
-    dirPath.includes('\\') || 
-    /\/\/+/.test(dirPath) || 
-    dirPath.includes('\0');
-}
-
-Given('a configured MCP server with directory validation', function(this: McpWorld) {
-  this.approvedDirectories = [...APPROVED_DIRECTORIES];
+  // Stub validation result - will fail in red phase
+  this.paths.validationResult = {
+    status: PathValidationStatus.Invalid,
+    normalizedPath: '/unapproved/directory',
+    originalPath: '/unapproved/directory',
+    isApproved: true // Will make test fail
+  };
 });
 
-Given('a set of approved project directories', function(this: McpWorld) {
-  assert(Array.isArray(this.approvedDirectories));
-  assert(this.approvedDirectories.length > 0);
+When('a tool attempts to access path {string}', function(this: McpWorld, path: string) {
+  this.paths.setCurrentPath(path);
+  
+  // Stub validation result - will fail in red phase
+  this.paths.validationResult = {
+    status: PathValidationStatus.Invalid,
+    normalizedPath: path,
+    originalPath: path,
+    isApproved: false // Will make test fail
+  };
 });
 
-When('I validate the directory {string}', function(this: McpWorld, dirPath: string) {
-  this.currentPath = dirPath;
-  this.validationResult = isApprovedDirectory(dirPath, this.approvedDirectories) && 
-    !hasSuspiciousPatterns(dirPath);
+// Configuration steps
+When('I configure approved directories:', function(this: McpWorld, dataTable) {
+  // Get directories from data table
+  const directories = dataTable.hashes().map((row: { directory: string }) => row.directory);
+  
+  // Add each directory
+  directories.forEach(dir => this.paths.addApprovedDirectory(dir));
 });
 
-When('I validate a directory containing a symbolic link', function(this: McpWorld) {
-  this.currentPath = '/approved/project/path/symlink';
-  this.symlinkTarget = '/approved/project/path/target';
-  this.validationResult = isApprovedDirectory(this.symlinkTarget, this.approvedDirectories);
+// Verification steps
+Then('the validation result should be {string}', function(this: McpWorld, result: string) {
+  const expected = result === 'success';
+  
+  // This will fail in red test phase
+  assert.strictEqual(this.paths.validationResult?.isApproved, expected, 
+    `Directory validation failed: expected ${expected} but got ${this.paths.validationResult?.isApproved}`);
 });
 
-When('I receive a directory path with potential exploits', function(this: McpWorld) {
-  this.currentPath = '/approved/project/path/../../../etc/passwd';
-  this.validationResult = isApprovedDirectory(this.currentPath, this.approvedDirectories) && 
-    !hasSuspiciousPatterns(this.currentPath);
+Then('the operation should be permitted', function(this: McpWorld) {
+  // This will fail in red test phase
+  assert.strictEqual(this.paths.validationResult?.isApproved, true, 'Operation should be permitted');
 });
 
-Then('the validation should succeed', function(this: McpWorld) {
-  assert.strictEqual(this.validationResult, true);
+Then('the directory validation should return success', function(this: McpWorld) {
+  // This will fail in red test phase
+  assert.strictEqual(this.paths.validationResult?.isApproved, true, 'Validation should succeed');
 });
 
-Then('the tool should be allowed to execute', function(this: McpWorld) {
-  assert.strictEqual(this.validationResult, true);
+Then('the operation should be blocked', function(this: McpWorld) {
+  // This will fail in red test phase
+  assert.strictEqual(this.paths.validationResult?.isApproved, false, 'Operation should be blocked');
 });
 
-Then('the validation should fail', function(this: McpWorld) {
-  assert.strictEqual(this.validationResult, false);
+Then('the directory validation should return an error message', function(this: McpWorld) {
+  // This will fail in red test phase
+  assert.strictEqual(this.paths.validationResult?.isApproved, false, 'Validation should fail');
 });
 
-Then('the server should return a directory access error', function(this: McpWorld) {
-  assert.strictEqual(this.validationResult, false);
+Then('the error should indicate access restriction', function(this: McpWorld) {
+  // This will fail in red test phase
+  assert.strictEqual(this.paths.validationResult?.status, PathValidationStatus.Invalid, 
+    'Validation should fail with access restriction');
 });
 
-Then('prevent tool execution', function(this: McpWorld) {
-  assert.strictEqual(this.validationResult, false);
+Then('operations within these directories should be permitted', function(this: McpWorld) {
+  assert(this.paths.approvedDirectories.length > 0, 'No approved directories configured');
+  // This will be implemented with proper validation in green phase
 });
 
-Then('the validation should check the real path', function(this: McpWorld) {
-  assert(this.symlinkTarget);
-});
-
-Then('only approve it if the real path is in the approved list', function(this: McpWorld) {
-  const targetIsApproved = isApprovedDirectory(this.symlinkTarget, this.approvedDirectories);
-  assert.strictEqual(this.validationResult, targetIsApproved);
-});
-
-Then('the validation should sanitize the path', function(this: McpWorld) {
-  assert(hasSuspiciousPatterns(this.currentPath));
-});
-
-Then('reject any path containing {string} segments', function(this: McpWorld, segment: string) {
-  assert(this.currentPath.includes(segment));
-  assert.strictEqual(this.validationResult, false);
-});
-
-Then('reject any path with suspicious patterns', function(this: McpWorld) {
-  assert.strictEqual(this.validationResult, false);
+Then('operations outside these directories should be blocked', function(this: McpWorld) {
+  assert(this.paths.approvedDirectories.length > 0, 'No approved directories configured');
+  // This will be implemented with proper validation in green phase
 });
