@@ -3,51 +3,55 @@ import { McpWorld } from '../support/world';
 import { ResourceTemplate } from '@modelcontextprotocol/sdk/server/mcp.js';
 import assert from 'assert';
 import path from 'path';
+import { parseDataTable } from '../support/utils/data-table-parser';
 
 // Background setup
 Given('an MCP server with Package resource capability', function(this: McpWorld) {
-  // Register Package resource capability flag
-  this.registeredResources = this.registeredResources || [];
-  this.registeredResources.push('package');
+  // Register Package resource capability 
+  this.resources.registerResource('package');
 });
 
 Given('access to JavaScript/TypeScript package.json files at configured paths', function(this: McpWorld) {
   // Verify mock filesystem is configured
-  assert(this.mockFs);
+  assert(this.mocks.mockFs, 'Mock filesystem not initialized');
 });
 
 // Package.json setup
 Given('a package.json file exists at {string}', function(this: McpWorld, packagePath: string) {
   // Store path for later use
-  this.packagePath = packagePath.replace(/"/g, '');
+  this.resources.packagePath = packagePath.replace(/"/g, '');
   
   // We're not actually creating it here in the test phase
   // Just verifying the step is called
-  assert(this.packagePath, 'No package.json path provided');
+  assert(this.resources.packagePath, 'No package.json path provided');
 });
 
 Given('no package.json exists at {string}', function(this: McpWorld, packagePath: string) {
   // Store invalid path for later use
-  this.packagePath = packagePath.replace(/"/g, '');
+  this.resources.packagePath = packagePath.replace(/"/g, '');
   
   // Flag that this path should not have a package.json
-  this.packageExists = false;
+  this.resources.packageExists = false;
 });
 
 Given('a package.json with optional fields at {string}', function(this: McpWorld, packagePath: string) {
   // Store path for later use
-  this.packagePath = packagePath.replace(/"/g, '');
+  this.resources.packagePath = packagePath.replace(/"/g, '');
   
   // Flag that this package has optional fields
-  this.packageHasOptionalFields = true;
+  this.resources.packageHasOptionalFields = true;
 });
 
 // Verification steps
 Then('I receive standard package metadata', function(this: McpWorld) {
-  // Verify response exists and has standard fields
-  assert(this.response?.contents?.[0]?.text, 'Response does not contain expected content');
+  // Get response
+  const response = this.resources.getResponse();
   
-  const responseJson = JSON.parse(this.response.contents[0].text);
+  // Verify response exists and has standard fields
+  assert(response && 'contents' in response && response.contents[0]?.text,
+    'Response does not contain expected content');
+  
+  const responseJson = JSON.parse(response.contents[0].text);
   
   // Check that required standard fields exist
   const requiredFields = ['name', 'version', 'dependencies', 'devDependencies', 'scripts'];
@@ -57,33 +61,18 @@ Then('I receive standard package metadata', function(this: McpWorld) {
 });
 
 Then('I receive optional fields:', function(this: McpWorld, dataTable: any) {
-  // Verify response exists
-  assert(this.response?.contents?.[0]?.text, 'Response does not contain expected content');
+  // Get response
+  const response = this.resources.getResponse();
   
-  const responseJson = JSON.parse(this.response.contents[0].text);
-  const expected: Record<string, string> = dataTable.rowsHash();
+  // Verify response exists
+  assert(response && 'contents' in response && response.contents[0]?.text,
+    'Response does not contain expected content');
+  
+  const responseJson = JSON.parse(response.contents[0].text);
+  const expected = parseDataTable(dataTable);
   
   // Check each expected optional field
-  for (const [key, value] of Object.entries(expected)) {
-    let expectedValue: any = value;
-    
-    // Convert string representations to actual types
-    if (typeof value === 'string') {
-      if (value === 'null') {
-        expectedValue = null;
-      } else if (value.startsWith('{') || value.startsWith('[')) {
-        try {
-          expectedValue = JSON.parse(value);
-        } catch (e: unknown) {
-          throw new Error(`Failed to parse JSON value for ${key}: ${value}`);
-        }
-      } else if (value === 'true') {
-        expectedValue = true;
-      } else if (value === 'false') {
-        expectedValue = false;
-      }
-    }
-    
+  for (const [key, expectedValue] of Object.entries(expected)) {
     assert.deepStrictEqual(
       responseJson[key],
       expectedValue,
@@ -93,29 +82,32 @@ Then('I receive optional fields:', function(this: McpWorld, dataTable: any) {
 });
 
 Then('I receive an error response with:', function(this: McpWorld, dataTable: any) {
-  // Verify error response exists
-  assert(this.response?.error, 'Expected error response not received');
+  // Get response
+  const response = this.resources.getResponse();
   
-  const expected: Record<string, string> = dataTable.rowsHash();
+  // Verify error response exists
+  assert(response && 'error' in response, 'Expected error response not received');
+  
+  const expected = parseDataTable(dataTable);
   
   // Check error status
   if (expected.status) {
-    const expectedStatus = parseInt(expected.status, 10);
+    const expectedStatus = parseInt(expected.status.toString(), 10);
     assert.strictEqual(
-      this.response.error.status,
+      response.error.status,
       expectedStatus,
-      `Error status mismatch: expected ${expectedStatus} but got ${this.response.error.status}`
+      `Error status mismatch: expected ${expectedStatus} but got ${response.error.status}`
     );
   }
   
   // Check error message
   if (expected.message) {
     // Remove quotes if present
-    const expectedMessage = expected.message.replace(/^"(.*)"$/, '$1');
+    const expectedMessage = expected.message.toString().replace(/^"(.*)"$/, '$1');
     assert.strictEqual(
-      this.response.error.message,
+      response.error.message,
       expectedMessage,
-      `Error message mismatch: expected "${expectedMessage}" but got "${this.response.error.message}"`
+      `Error message mismatch: expected "${expectedMessage}" but got "${response.error.message}"`
     );
   }
 });
@@ -126,9 +118,9 @@ Then('the path should be normalized to {string}', function(this: McpWorld, norma
   normalizedPath = normalizedPath.replace(/"/g, '');
   
   // Store for later verification when path normalization is implemented
-  this.normalizedPath = normalizedPath;
+  this.paths.normalizedPath = normalizedPath;
   
   // In red test phase, we just verify the step is called
-  assert(this.pathNormalizationEnabled, 'Path normalization not enabled');
+  assert(this.paths.pathNormalizationEnabled, 'Path normalization not enabled');
   assert(normalizedPath, 'No normalized path to compare against');
 });

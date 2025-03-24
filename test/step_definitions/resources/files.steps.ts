@@ -4,21 +4,25 @@ import assert from 'assert';
 
 // Background setup
 Given('an MCP server with Files resource capability', function(this: McpWorld) {
-  this.registeredResources = this.registeredResources || [];
-  this.registeredResources.push('files');
+  // Use the new resources context instead of direct property access
+  this.resources.registerResource('files');
 });
 
 Given('access to JavaScript/TypeScript project files at configured paths', function(this: McpWorld) {
   // Verify mock filesystem is configured
-  assert(this.mockFs);
+  assert(this.mocks.mockFs, 'Mock filesystem not initialized');
 });
 
 // File structure parsing
 Then('I receive file organization data including:', function(this: McpWorld, dataTable: any) {
-  // Verify response exists
-  assert(this.response?.contents?.[0]?.text, 'Response does not contain expected content');
+  // Get the response from resource context
+  const response = this.resources.getResponse();
   
-  const responseJson = JSON.parse(this.response.contents[0].text);
+  // Verify response exists and has contents
+  assert(response && 'contents' in response && response.contents[0]?.text, 
+    'Response does not contain expected content');
+  
+  const responseJson = JSON.parse(response.contents[0].text);
   const expected: Record<string, string> = dataTable.rowsHash();
   
   // Check each expected field

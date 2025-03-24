@@ -3,6 +3,7 @@
  * Manages server-related state and operations
  */
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
+import { z } from 'zod';
 
 export class ServerContext {
   // Core server instance
@@ -29,6 +30,28 @@ export class ServerContext {
   // Client session info
   clientConnected: boolean = false;
   concurrentClients: number = 0;
+  
+  // Tool properties
+  registeredTools: string[] = [];
+  toolParameters: Record<string, z.ZodTypeAny> = {};
+  toolsRequested: boolean = false;
+  toolExecutionError: string | null = null;
+  toolExecutionSuccess: boolean = false;
+  
+  // Prompt properties
+  registeredPrompts: string[] = [];
+  promptParameters: Record<string, z.ZodTypeAny> = {}; 
+  promptsRequested: boolean = false;
+  requestedPrompt: string | null = null;
+  requestedPromptParams: Record<string, any> | null = null;
+  
+  // Resource properties
+  resourceTemplates: string[] = [];
+  resourcesRequested: boolean = false;
+  resourcePaths: Array<{resource: string, path: string}> = [];
+  
+  // Command execution properties
+  commandTimeout: number = 0;
   
   constructor() {
     // Create the server instance
