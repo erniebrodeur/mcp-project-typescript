@@ -45,7 +45,7 @@ Then('I receive complete documentation metadata including:', function(this: McpW
     'Response does not contain expected content');
   
   const responseJson = JSON.parse(response.contents[0].text);
-  const expected = parseDataTable(dataTable);
+  const expected = parseDataTable(dataTable) as Record<string, any>;
   
   // Verify each expected field
   for (const [key, expectedValue] of Object.entries(expected)) {
@@ -83,7 +83,7 @@ Then('I receive comment quality analysis:', function(this: McpWorld, dataTable) 
     'Response does not contain expected content');
   
   const responseJson = JSON.parse(response.contents[0].text);
-  const expected = parseDataTable(dataTable);
+  const expected = parseDataTable(dataTable) as Record<string, any>;
   
   // Verify comment analysis data
   assert(responseJson.comment_analysis, 'No comment analysis data in response');

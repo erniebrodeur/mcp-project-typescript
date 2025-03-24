@@ -44,7 +44,7 @@ When('I execute a command that fails', function(this: McpWorld) {
 });
 
 When('I execute a command with custom environment variables:', function(this: McpWorld, dataTable) {
-  const envVars = dataTable.hashes().reduce((acc, row) => {
+  const envVars = dataTable.hashes().reduce((acc: Record<string, string>, row: { variable: string; value: string }) => {
     acc[row.variable] = row.value;
     return acc;
   }, {} as Record<string, string>);

@@ -51,7 +51,7 @@ export function parseStringValue(value: string): any {
  * @param schema Optional Zod schema for validation
  * @returns Parsed object with appropriate types
  */
-export function parseDataTable<T>(
+export function parseDataTable<T = Record<string, any>>(
   dataTable: DataTable, 
   schema?: z.ZodType<T>
 ): T {

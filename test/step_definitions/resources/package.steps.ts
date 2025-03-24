@@ -69,7 +69,7 @@ Then('I receive optional fields:', function(this: McpWorld, dataTable: any) {
     'Response does not contain expected content');
   
   const responseJson = JSON.parse(response.contents[0].text);
-  const expected = parseDataTable(dataTable);
+  const expected = parseDataTable(dataTable) as Record<string, any>;
   
   // Check each expected optional field
   for (const [key, expectedValue] of Object.entries(expected)) {
@@ -88,7 +88,7 @@ Then('I receive an error response with:', function(this: McpWorld, dataTable: an
   // Verify error response exists
   assert(response && 'error' in response, 'Expected error response not received');
   
-  const expected = parseDataTable(dataTable);
+  const expected = parseDataTable(dataTable) as Record<string, any>;
   
   // Check error status
   if (expected.status) {

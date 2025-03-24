@@ -40,7 +40,7 @@ When('define parameters:', function(this: McpWorld, dataTable) {
   // Create parameter schema
   const paramSchema: Record<string, z.ZodTypeAny> = {};
   
-  params.forEach(param => {
+  params.forEach((param: { parameter: string; type: string; required: string }) => {
     if (param.type === 'string') {
       paramSchema[param.parameter] = param.required === 'true' ? 
         z.string() : z.string().optional();

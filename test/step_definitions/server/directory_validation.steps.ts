@@ -62,7 +62,7 @@ When('I configure approved directories:', function(this: McpWorld, dataTable) {
   const directories = dataTable.hashes().map((row: { directory: string }) => row.directory);
   
   // Add each directory
-  directories.forEach(dir => this.paths.addApprovedDirectory(dir));
+  directories.forEach((dir: string) => this.paths.addApprovedDirectory(dir));
 });
 
 // Verification steps

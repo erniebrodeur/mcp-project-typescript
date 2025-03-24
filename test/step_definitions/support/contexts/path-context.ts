@@ -18,6 +18,12 @@ export class PathContext {
   normalizedPath: string = '';
   validationResult: PathValidationResult | null = null;
   
+  // URI processing state
+  uri: string = '';
+  uriTemplate: string = '';
+  extractedParam: string = '';
+  securityResult: string | PathValidationStatus = '';
+  
   /**
    * Enable path normalization
    */

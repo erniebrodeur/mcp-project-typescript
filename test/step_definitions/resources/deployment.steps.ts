@@ -45,7 +45,7 @@ Then('I receive complete deployment metadata including:', function(this: McpWorl
     'Response does not contain expected content');
   
   const responseJson = JSON.parse(response.contents[0].text);
-  const expected = parseDataTable(dataTable);
+  const expected = parseDataTable(dataTable) as Record<string, any>;
   
   // Verify each expected field
   for (const [key, expectedValue] of Object.entries(expected)) {
@@ -83,7 +83,7 @@ Then('I receive deployment security analysis:', function(this: McpWorld, dataTab
     'Response does not contain expected content');
   
   const responseJson = JSON.parse(response.contents[0].text);
-  const expected = parseDataTable(dataTable);
+  const expected = parseDataTable(dataTable) as Record<string, any>;
   
   // Verify security analysis data
   assert(responseJson.security_analysis, 'No security analysis data in response');

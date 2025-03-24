@@ -28,6 +28,107 @@ export class McpWorld extends World {
   // Legacy accessor methods for backward compatibility
   // These will be deprecated once all step definitions are updated
   
+  // Path context accessors
+  get pathHandlingEnabled() {
+    return this.paths.pathNormalizationEnabled;
+  }
+  
+  set pathHandlingEnabled(value: boolean) {
+    this.paths.pathNormalizationEnabled = value;
+  }
+  
+  get pathNormalizationEnabled() {
+    return this.paths.pathNormalizationEnabled;
+  }
+  
+  set pathNormalizationEnabled(value: boolean) {
+    this.paths.pathNormalizationEnabled = value;
+  }
+  
+  get currentPath() {
+    return this.paths.currentPath;
+  }
+  
+  set currentPath(value: string) {
+    this.paths.currentPath = value;
+  }
+  
+  get inputPath() {
+    return this.paths.currentPath;
+  }
+  
+  set inputPath(value: string) {
+    this.paths.currentPath = value;
+  }
+  
+  get normalizedPath() {
+    return this.paths.normalizedPath;
+  }
+  
+  set normalizedPath(value: string) {
+    this.paths.normalizedPath = value;
+  }
+  
+  get validationResult() {
+    return this.paths.validationResult?.isApproved ?? false;
+  }
+  
+  set validationResult(value: boolean) {
+    if (this.paths.validationResult) {
+      this.paths.validationResult.isApproved = value;
+    }
+  }
+  
+  get approvedDirectories() {
+    return this.paths.approvedDirectories;
+  }
+  
+  set approvedDirectories(value: string[]) {
+    this.paths.approvedDirectories = value;
+  }
+  
+  get projectRoots() {
+    return this.paths.projectRoots;
+  }
+  
+  set projectRoots(value: string[]) {
+    this.paths.projectRoots = value;
+  }
+  
+  get uri() {
+    return this.paths.uri;
+  }
+  
+  set uri(value: string) {
+    this.paths.uri = value;
+  }
+  
+  get uriTemplate() {
+    return this.paths.uriTemplate;
+  }
+  
+  set uriTemplate(value: string) {
+    this.paths.uriTemplate = value;
+  }
+  
+  get extractedParam() {
+    return this.paths.extractedParam;
+  }
+  
+  set extractedParam(value: string) {
+    this.paths.extractedParam = value;
+  }
+  
+  get securityResult() {
+    return this.paths.securityResult;
+  }
+  
+  set securityResult(value: string) {
+    this.paths.securityResult = value;
+  }
+  
+  // TestContext accessors
+  
   get mockExecutor() {
     return this.mocks.mockExecutor;
   }
