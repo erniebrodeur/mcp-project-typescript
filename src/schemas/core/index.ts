@@ -11,3 +11,6 @@ export * from './resources';
 export * from './tools';
 export * from './prompts';
 export * from './paths';
+export * from './handlers';
+export * from './request-types';
+export * from './server';
